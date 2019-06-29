@@ -1,12 +1,19 @@
 #include "interaccion.h"
 #include "general.h"
-
+#include "avanzar.h"
 int apply_PBC(double *x, int N, float L)
 {
 	int i;
 	for(i = 0; i < 3 * N; i ++)
 	{
-		*(x +i) = fmod(fmod(*(x + i), L), L);
+		if (*(x + i) > L)
+		{
+			*(x +i) = *(x +i) - L;
+		}
+		else if (*(x + i) < 0)
+		{
+			*(x +i) = *(x +i) + L;
+		}
 	}
 	return 0;
 }

@@ -1,17 +1,19 @@
-float aleatorio()
+#include "general.h"
+float aleatorio(float seed)
 {
 	float x;
+	srand(seed);
 	x = (float) rand() / (float) RAND_MAX;
 	return x;
 }
 
-float gaussiana(float mu, float sigma)
+float gaussiana(float mu, float sigma, float seed)
 {
 	int i;
 	float z = 0.0, n = 10.0, x;
 	for (i = 0; i < n; i++)
 	{
-		x = aleatorio();
+		x = aleatorio(seed);
 		z+= x;
 	}
 	z = sqrt(12.0) * (z/n - 0.5);

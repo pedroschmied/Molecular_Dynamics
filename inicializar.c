@@ -1,4 +1,5 @@
 #include "general.h"
+#include "inicializar.h"
 //	distribuyo la posicón de las partículas en una caja 3D, elegí (x0, y0, z0) = (0.5, 0.5, 0.5) solo para evitar el origen xq Lennard Jones diverge allí.
 double set_pos(double *x, int N, float L)
 {
@@ -25,9 +26,10 @@ double set_vel(double *v, int N, float T)
 {
 	float sigma = sqrt(T);// m = 1
 	int i, k;
+	float seed = 100.0;
 	for(i = 0; i < 3 * N; i++)
 	{
-		*(v + i) = gaussiana(0.0, sigma);
+		*(v + i) = gaussiana(0.0, sigma, seed);
 	}
 	double *vcm;
 	vcm = (double*) malloc(3 * sizeof(double));
