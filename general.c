@@ -1,23 +1,22 @@
 #include "general.h"
-float aleatorio(float seed)
+double aleatorio()
 {
-	float x;
-	srand(seed);
-	x = (float) rand() / (float) RAND_MAX;
+	double x;
+	x = (double) rand() / (double) RAND_MAX;
 	return x;
 }
 
-float gaussiana(float mu, float sigma, float seed)
+float gaussiana(double mu, double sigma)
 {
 	int i;
-	float z = 0.0, n = 10.0, x;
+	double z = 0.0, n = 10.0, x;
 	for (i = 0; i < n; i++)
 	{
-		x = aleatorio(seed);
+		x = aleatorio();
 		z+= x;
 	}
 	z = sqrt(12.0) * (z/n - 0.5);
-	float g = z * sigma + mu;
+	double g = z * sigma + mu;
 	return g;
 }
 // calculo la el r cuadrado de la partícula i

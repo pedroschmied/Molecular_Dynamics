@@ -10,7 +10,7 @@
 
 int main()
 {
-	int N = 216;
+	int N = 512;
 	float rho = 0.8442, L = cbrt(N/rho);
 	float T =  2.0;
 	double *x, *v;
@@ -42,7 +42,7 @@ int main()
 	double cinetica = set_vel(v, N, T);
 	double potencial, temp;
 	potencial = fuerzas(tabla_F, tabla_V, F, F2, x, rc2, dr2, N, L);
-	temp = cinetica * 2.0 / 3.0 * (double)N;
+	temp = cinetica * 2.0 / (3.0 * (double)N);
 	fprintf(fp, "%d\t", 0);
 	fprintf(fp, "%lf\t", potencial / (double)N);
 	fprintf(fp, "%lf\t", cinetica / (double)N);

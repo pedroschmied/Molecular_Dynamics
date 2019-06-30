@@ -1,3 +1,4 @@
+#include "interaccion.h"
 double tablas (double *tabla_V,double *tabla_F, double rc2, int largo_tabla)
 {
 	double rf2 = 2.5 * 2.5; //sigma = 1
@@ -11,10 +12,7 @@ double tablas (double *tabla_V,double *tabla_F, double rc2, int largo_tabla)
 		rij2 += dr2;
 		r6 = (1.0 / rij2) * (1.0 / rij2) * (1.0 / rij2);
 		*(tabla_V + l) = 4.0 * (r6 * r6 - r6) - Vrc;
-	// //	V = 4 * ((1/rij2)^12 - (1/rij2)^6) - 4 * ((1/rc2)^12 - (1/rc2)^6)
 		*(tabla_F + l) = (24.0 / rij2) * (2.0 * r6 * r6 - r6);
-//		*(tabla_V + l) = 4.0 * (1.0/ pow(rij2, 6.0) - 1.0/ pow(rij2, 3.0)) - Vrc;
-//		*(tabla_F + l) = 24.0/rij2 * (2.0/ pow(rij2, 6.0) - 1.0/ pow(rij2, 3.0));
 	}
 	return dr2;
 }
@@ -22,6 +20,10 @@ double tablas (double *tabla_V,double *tabla_F, double rc2, int largo_tabla)
 double pair_force (double *tabla_F, double *tabla_V, double rij2, double dr2, double *F_mod)
 {
 	int k = (int)((rij2 - dr2) / dr2);
+	if(k < 0)
+	{
+		k = 0;
+	}
 	*F_mod = (*(tabla_F + k + 1) - *(tabla_F + k)) * (rij2 - k * dr2) / dr2 + *(tabla_F + k);
 	double Vij = (*(tabla_V + k + 1) - *(tabla_V + k)) * (rij2 - k * dr2) / dr2 + *(tabla_V + k);
 	return Vij;

@@ -24,20 +24,71 @@ double set_pos(double *x, int N, float L)
 // distribución gaussiana en la velocidad y le resto la Veloc. del centro de masa para que no haya un flujo de partículas
 double set_vel(double *v, int N, float T)
 {
-	float sigma = sqrt(T);// m = 1
+/*	float sigma = sqrt(T);// m = 1
 	int i, k;
-	float seed = 100.0;
+	srand(100.0);
 	for(i = 0; i < 3 * N; i++)
 	{
-		*(v + i) = gaussiana(0.0, sigma, seed);
+		*(v + i) = gaussiana(0.0, sigma);
 	}
+*/
+/*	double vel, x1, x2, x3;
+	float a1, a2;
+	for(i = 0; i < N; i++)
+	{
+		vel = gaussiana(0.0, sigma);
+		a1 = aleatorio();
+		a2 = aleatorio();// sen(tita)^2; sen(tita)-->(0, 1)
+		x1 = (double) a1 * 2.0 - 1.0; // va de [-1; 1] como un seno/coseno
+		
+		x2 = sqrt((double) a2 - x1 * x1);
+		*(v + 3 * i + 0) = (double) x1 * vel;
+		*(v + 3 * i + 1) = (double) x2 * vel;
+		x3 = sqrt(1.0 - x1 * x1 - x2 * x2);
+//		printf("%lf\t",  - *(v + 3 * i + 1) * *(v + 3 * i + 1) - *(v + 3 * i + 0) * *(v + 3 * i + 0));
+//		printf("%f\n", vel * vel);
+//		printf("%lf\t", *(v + 3 * i + 0));
+//		printf("%lf\t", *(v + 3 * i + 1));
+//		printf("%d\t", i);
+//		printf("%f\t", x1);
+//		printf("%f\t", x2);
+//		printf("%lf\n", vel);
+
+		*(v + 3 * i + 2) = vel * x3;
+*/
+	float sigma = sqrt(T);// m = 1
+	int i, k;
+	srand(100.0);
+
+	double vel, a3, a1, b;
+	for(i = 0; i < N; i++)
+	{
+		vel = gaussiana(0.0, sigma);
+		a3 = aleatorio(); // cos(tita)
+		*(v + 3 * i + 2) = a3 * vel;
+		a1 = aleatorio();
+		a1 = a1 * 2.0 - 1.0; // cos(fi)
+		b = sqrt(1.0 - a3 * a3); // sen(tita)
+		if (a3 == 0.0) // si el cos(tita) = 0 ---> sen(tita) =  1; tita--> (0;pi)
+		{
+			b = 1.0;
+		}
+		*(v + 3 * i + 0) = vel * a1 * b;
+		*(v + 3 * i + 1) = vel * b * sqrt(1.0 - a1 * a1);
+	}
+
 	double *vcm;
 	vcm = (double*) malloc(3 * sizeof(double));
+	for(k = 0; k < 3; k++)
+	{
+		*(vcm + k) = 0.0;
+	}
+
 	for(i = 0; i < N; i++)
 	{
 		for(k = 0; k < 3; k++)
 		{
-			*(vcm + k) = *(v + 3 * i + k) /(double) N;
+			*(vcm + k) += *(v + 3 * i + k) /(double) N;
 		}
 	}
 	for(i = 0; i < N; i++)
@@ -48,12 +99,9 @@ double set_vel(double *v, int N, float T)
 		}
 	}
 	double E_cin = 0.0;
-	for(i = 0; i < N; i++)
+	for(i = 0; i < 3 * N; i++)
 	{
-		for(k = 0; k < 3; k++)
-		{
-			E_cin += (*(v + 3 * i + k) * *(v + 3 * i + k) / 2.0);
-		}
+		E_cin += (*(v + i) * *(v + i) / 2.0);
 	}
 	free(vcm);
 	return E_cin;
