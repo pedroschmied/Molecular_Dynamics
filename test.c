@@ -34,7 +34,7 @@ int main()
 	char filename2[255];
 	sprintf(filename2, "/home/pedro/Documents/VMD_files/test.lammpstrj");
 	save_lammpstrj(filename2, x, v, N, L, 0);
-	set_pos(x, N, L);
+	double dl = set_pos(x, N, L);
 	double cinetica0 = set_vel(v, N, T_gauss);
 	double potencial0, temp0;
 	potencial0 = fuerzas(tabla_F, tabla_V, F, F2, x, rc2, dr2, N, L);
@@ -42,10 +42,10 @@ int main()
 	temp0 = cinetica0 * 2.0 / (3.0 * (double)N);
 
 
-	int i, k, t, tfinal = 100;
+	int i, k, t, , pasos = 100000;
 	int p, loops_T = 1000;
-	double T0 = temp0, T = T0, dT, factor_T, Tf = 0.728;
-	int pasos_T = loops_T * tfinal, pasos = 0;
+	double T0 = temp0, T = T0, dT, Tf = 0.728;
+	int tfinal = 100, pasos_T = loops_T * tfinal;
 	double  *potencial;
 	potencial = (double*) malloc((pasos_T + pasos)* sizeof(double));
 	double  *cinetica;
@@ -79,18 +79,13 @@ int main()
 				save_lammpstrj(filename2, x, v, N, L, p * tfinal + t + 1);
 			}
 		}
-		T -= dT;
+		T += dT;
 		T0 = *(cinetica + p * tfinal + tfinal - 1) * 2.0 / 3.0;
-		factor_T = sqrt(T / T0);
-		for (i = 0; i < 3 * N; i++)
-		{
-			*(v + i) = *(v + i) * factor_T;
-		}
+		temp_change(v, N, T0, T);
 	}
 
 	for (t = 0; t < pasos + 1; t++)
 	{
-
 		va = (float)(pasos_T - 1 + t) * 100.0 / (float)(pasos_T + pasos);
 		printf("Progreso %f", va);
 		printf("%%\r");
@@ -116,7 +111,7 @@ int main()
 
 	FILE * fp;
 	char filename[500];
-	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos.txt");
+	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/test_datos.txt");
 	fp = fopen(filename, "w");
 	fprintf(fp, "%d\t", 0);
 	fprintf(fp, "%lf\t", potencial0 / (double)N);
