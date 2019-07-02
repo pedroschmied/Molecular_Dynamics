@@ -53,7 +53,6 @@ int main()
 	double h = 0.001;
 	float va;
 	dT = (Tf - T0) / (double)(loops_T - 1);
-//	printf("dT = %lf ; T0 = %lf ; (T/T0)^(1/2) = %lf\n", dT, T0, sqrt((T0 + dT)/T0));
 	for (p = 0; p < loops_T; p++)
 	{
 		for (t = 0; t < tfinal; t++)
@@ -75,7 +74,7 @@ int main()
 			}
 			*(potencial + p * tfinal + t) = *(potencial + p * tfinal + t) / (double)N;
 			*(cinetica + p * tfinal + t) = *(cinetica + p * tfinal + t) / (double)N;
-			if (t % 5 == 0)
+			if (t % 10 == 0)
 			{
 				save_lammpstrj(filename2, x, v, N, L, p * tfinal + t + 1);
 			}
@@ -88,7 +87,7 @@ int main()
 			*(v + i) = *(v + i) * factor_T;
 		}
 	}
-/*
+
 	for (t = 0; t < pasos + 1; t++)
 	{
 
@@ -109,15 +108,15 @@ int main()
 		}
 		*(potencial + pasos_T - 1 + t) = *(potencial + pasos_T - 1 + t) / (double)N;
 		*(cinetica + pasos_T - 1 + t) = *(cinetica + pasos_T - 1 + t) / (double)N;
-			if (t % 5 == 0)
-			{
-				save_lammpstrj(filename2, x, v, N, L, pasos_T - 1 + t);
-			}
+		if (t % 15 == 0)
+		{
+			save_lammpstrj(filename2, x, v, N, L, pasos_T - 1 + t);
+		}
 	}
-*/
+
 	FILE * fp;
 	char filename[500];
-	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos2.txt");
+	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos.txt");
 	fp = fopen(filename, "w");
 	fprintf(fp, "%d\t", 0);
 	fprintf(fp, "%lf\t", potencial0 / (double)N);

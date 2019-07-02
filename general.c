@@ -15,7 +15,7 @@ float gaussiana(double mu, double sigma)
 		x = aleatorio();
 		z+= x;
 	}
-	z = sqrt(12.0) * (z/n - 0.5);
+	z = sqrt(12.0 * n) * (z / n - 0.5);
 	double g = z * sigma + mu;
 	return g;
 }
