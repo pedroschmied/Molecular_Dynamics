@@ -7,12 +7,13 @@
 #include "visualizacion.h"
 #include "interaccion.h"
 #include "avanzar.h"
+#include "termalizacion.h"
 
 int main()
 {
 	int N = 512;
 	float rho = 0.8442, L = cbrt(N / rho);
-	float T_gauss =  2.0;
+	float T_gauss =  0.1;
 	double *x, *v;
 	x = (double*) malloc(3 * N * sizeof(double));
 	v = (double*) malloc(3 * N * sizeof(double));
@@ -34,7 +35,7 @@ int main()
 	char filename2[255];
 	sprintf(filename2, "/home/pedro/Documents/VMD_files/test.lammpstrj");
 //condiciones iniciales
-	set_pos(x, N, L);
+	double dl = set_pos(x, N, L);
 	double cinetica0 = set_vel(v, N, T_gauss);
 	double potencial0, temp0;
 	potencial0 = fuerzas(tabla_F, tabla_V, F, F2, x, rc2, dr2, N, L);
@@ -42,13 +43,19 @@ int main()
 	save_lammpstrj(filename2, x, v, N, L, 0);
 
 	int i, t;
-	int pasos = 100000;
+	int pasos = 3000;
 	double  *potencial;
 	potencial = (double*) malloc((pasos)* sizeof(double));
 	double  *cinetica;
 	cinetica = (double*) malloc((pasos) * sizeof(double));
 	double h = 0.001;
 	float va;
+	double l, H;
+	FILE * fp3;
+	char filename3[500];
+	sprintf (filename3,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/termalizacion%g.txt", T_gauss);
+	fp3 = fopen(filename3, "w");
+
 	for (t = 0; t < pasos; t++)
 	{
 		va = (float)(t) * 100.0 / (float)(pasos);
@@ -69,8 +76,13 @@ int main()
 		{
 			save_lammpstrj(filename2, x, v, N, L, t + 1);
 		}
+		l = lambda(x, dl, N);
+		H = H_boltzmann (v, N);
+		fprintf(fp3, "%d\t", t);
+		fprintf(fp3, "%lf\t", l);
+		fprintf(fp3, "%lf\n", H);
 	}
-
+	fclose(fp3);
 	FILE * fp;
 	char filename[500];
 	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos.txt");
@@ -105,4 +117,4 @@ int main()
 #include "visualizacion.c"
 #include "interaccion.c"
 #include "avanzar.c"
-
+#include "termalizacion.c"
