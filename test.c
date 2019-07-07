@@ -11,7 +11,7 @@
 int main()
 {
 	int N = 512;
-	float rho = 0.8442, L = cbrt(N/rho);
+	float rho = 1.2, L = cbrt(N/rho);
 	float T_gauss =  2.0;
 	double *x, *v;
 	x = (double*) malloc(3 * N * sizeof(double));
@@ -40,19 +40,22 @@ int main()
 	potencial0 = fuerzas(tabla_F, tabla_V, F, F2, x, rc2, dr2, N, L);
 
 	temp0 = cinetica0 * 2.0 / (3.0 * (double)N);
-
-
-	int i, k, t, , pasos = 100000;
-	int p, loops_T = 1000;
-	double T0 = temp0, T = T0, dT, Tf = 0.728;
-	int tfinal = 100, pasos_T = loops_T * tfinal;
+//______datos variables
+	int pasos = 10000;
+	int loops_T = 2000;
+	int tfinal = 50;
+	double Tf = 0.1;
+//______
+	int i, k, t, p;
+	double T0 = temp0, T = T0, dT;
+	int pasos_T = loops_T * tfinal;
 	double  *potencial;
 	potencial = (double*) malloc((pasos_T + pasos)* sizeof(double));
 	double  *cinetica;
 	cinetica = (double*) malloc((pasos_T + pasos) * sizeof(double));
 	double h = 0.001;
 	float va;
-	dT = (Tf - T0) / (double)(loops_T - 1);
+	dT = (Tf - T0) / (double)(loops_T);
 	for (p = 0; p < loops_T; p++)
 	{
 		for (t = 0; t < tfinal; t++)
@@ -79,9 +82,15 @@ int main()
 				save_lammpstrj(filename2, x, v, N, L, p * tfinal + t + 1);
 			}
 		}
-		T += dT;
 		T0 = *(cinetica + p * tfinal + tfinal - 1) * 2.0 / 3.0;
-		temp_change(v, N, T0, T);
+		dT = (Tf - T0) / (double)(loops_T - p);
+		T += dT;
+		double factor_T = sqrt(T / T0);
+		for (i = 0; i < 3 * N; i++)
+		{
+			*(v + i) = *(v + i) * factor_T;
+		}
+
 	}
 
 	for (t = 0; t < pasos + 1; t++)
