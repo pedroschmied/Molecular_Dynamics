@@ -1,5 +1,8 @@
 #include "termalizacion.h"
-#define PI  3.14159
+#include "general.h"
+#include "avanzar.h"
+
+//#define PI  3.14159
 double lambda(double *x, double dl, int N)
 {
 	double l = 0.0;
@@ -73,3 +76,33 @@ double H_boltzmann (double *v, int N)
 	return H;
 }
 
+double distribucion_radial(double *x, double *g_r, double dr_g, double L, int N)
+{
+	double rij, r;
+	int i, j, h;
+	double *delta_r;
+	delta_r = (double*) malloc(3 * sizeof(double));
+
+	for (i = 0; i < N; i++)
+	{
+		for (j = i + 1; j < N; j++)
+		{
+			delta_x(x, i, j, delta_r);
+			fuerza_PCB(delta_r, L);
+			rij = norma2(delta_r);
+			rij = sqrt(rij);
+			if(rij <= L / 2.0)
+			{
+				h = (int)(rij / dr_g);
+				r = (double) h * dr_g;	//como el int redondea para abajo rij > r siempre o igual
+				if(rij - r > dr_g / 2.0)
+				{				//estoy haciendo esto:
+					h += 1;		// if(r-dr_g/2 < rij > r +dr_g/2)   {delta(r-rij) = 1}
+				}
+				*(g_r + h) += 1.0;
+			}
+		}
+	}
+	free(delta_r);
+	return 0.0;
+}
