@@ -14,8 +14,8 @@
 int main()
 {
 	int N = 512;
-	float rho = 0.8442, L = cbrt(N / rho);
-	float T_gauss =  30.0;
+	float rho = 0.8, L = cbrt(N / rho);
+	float T_gauss =  2.5;
 	double *x, *v;
 	x = (double*) malloc(3 * N * sizeof(double));
 	v = (double*) malloc(3 * N * sizeof(double));
@@ -48,7 +48,7 @@ int main()
 	save_lammpstrj(filename2, x, v, N, L, 0);
 
 	int i, t;
-	int pasos = 20000, termalizacion = 10000;
+	int pasos = 50000, termalizacion = 2000;
 	double  *potencial;
 	potencial = (double*) malloc((pasos + termalizacion)* sizeof(double));
 	double  *cinetica;
@@ -75,7 +75,7 @@ int main()
 	for(t = 0; t < termalizacion; t++)
 	{
 		va = (float)(t) * 100.0 / (float)(pasos + termalizacion);
-		printf("Progreso %f", va);
+		printf("Progreso %.2f", va);
 		printf("%%\r");
 		*(cinetica + t) = 0.0;
 		position_verlet(x, v, N, h, F);
@@ -89,11 +89,11 @@ int main()
 		*(potencial + t) = *(potencial + t) / (double)N;
 		*(cinetica + t) = *(cinetica + t) / (double)N;
 	}
-
-	for (t = termalizacion; t < pasos; t++)
+	int correlacion = 2000;
+	for (t = termalizacion; t < pasos + termalizacion; t++)
 	{
 		va = (float)(t) * 100.0 / (float)(pasos + termalizacion);
-		printf("Progreso %f", va);
+		printf("Progreso %.2f", va);
 		printf("%%\r");
 		*(cinetica + t) = 0.0;
 		position_verlet(x, v, N, h, F);
@@ -110,29 +110,33 @@ int main()
 		{
 			save_lammpstrj(filename2, x, v, N, L, t + 1);
 		}
-/*		l = lambda(x, dl, N);
+/*		l = coeficiente_verlet(x, dl, N);
 		H = H_boltzmann (v, N);
 		fprintf(fp3, "%d\t", t);
 		fprintf(fp3, "%lf\t", l);
 		fprintf(fp3, "%lf\n", H);
-*/
-		distribucion_radial(x, g_r, dr_g, L, N);
+*/		if (t % correlacion == 0) //mido g_r descorrelacionada (1000 pasos) solo
+		{
+			distribucion_radial(x, g_r, dr_g, L, N);
+		}
 	}
 	double temperatura = 0.0;
 	for(t = pasos - 1000; t < pasos; t++)
 	{
 		temperatura += *(cinetica + t) * 2.0 / 3.0;
 	}
+	temperatura = temperatura / 1000.0;
+	/*temperatura = (double)((int) (temperatura * 10.0 / 1000.0)) / 10.0;*/
 	FILE * fp3;
 	char filename3[500];
-	sprintf (filename3,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/g_r_T_%2g.txt", temperatura);
+	sprintf (filename3,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/g_r_T_%.2lf.txt", temperatura);
 	fp3 = fopen(filename3, "w");
 
 	fprintf(fp3, "%lf\t", 0.0);
 	fprintf(fp3, "%lf\n", *(g_r + 0) / ((double) N * dr_g * rho * 2.0 * PI * pasos));
 	for (r = 1; r < (int)(L / (2.0 * dr_g)); r++)
 	{
-		*(g_r + r) = *(g_r + r) / ((double)(N * r * r ) * dr_g * dr_g * dr_g * rho * 2.0 * PI * pasos);
+		*(g_r + r) = *(g_r + r) / ((double)(N * r * r ) * dr_g * dr_g * dr_g * rho * 2.0 * PI * pasos / correlacion);
 		fprintf(fp3, "%lf\t", (double) r * dr_g);
 		fprintf(fp3, "%lf\n", *(g_r + r));
 	}
@@ -147,7 +151,7 @@ int main()
 	fprintf(fp, "%lf\t", (cinetica0 + potencial0) / (double)N);
 	fprintf(fp, "%lf\n", temp0);
 */	int n;
-	for (n = termalizacion; n < pasos ; n++)
+	for (n = termalizacion; n < pasos + termalizacion ; n++)
 	{
 		fprintf(fp, "%d\t", n - termalizacion);
 		fprintf(fp, "%lf\t", *(potencial + n));
@@ -156,6 +160,7 @@ int main()
 		fprintf(fp, "%lf\n", *(cinetica + n) * 2.0 / 3.0);
 	}
 	fclose(fp);
+	free(g_r);
 	free(cinetica);
 	free(potencial);
 	free(F);

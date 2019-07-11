@@ -3,7 +3,7 @@
 #include "avanzar.h"
 
 //#define PI  3.14159
-double lambda(double *x, double dl, int N)
+double coeficiente_verlet(double *x, double dl, int N)
 {
 	double l = 0.0;
 	int i;
