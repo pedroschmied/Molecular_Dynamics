@@ -35,7 +35,7 @@ int main()
 	F2 = (double*) malloc(3 * N * sizeof(double));
 
 	int i, t, c, n;
-	int pasos = 10, termalizacion = 100, correlacion = 5;
+	int pasos = 100, termalizacion = 100, correlacion = 100;
 	double h = 0.001, pot;
 	double  *potencial, *cinetica, *energia;
 	potencial = (double*) malloc((pasos)* sizeof(double));
@@ -43,9 +43,9 @@ int main()
 	energia = (double*) malloc((pasos)* sizeof(double));
 	double *mean_V, *mean_K, *mean_E, *std2_V, *std2_K, *std2_E, *Cv;
 	float va;
-	float T_gauss =  1.0;
-	double T0 = (double)T_gauss, Tf = 0.5, dT;
-	int temperaturas = 10;
+	float T_gauss =  0.65;
+	double T0 = (double)T_gauss, Tf = 0.3, dT;
+	int temperaturas = 1000;
 
 	mean_V = (double*) malloc((temperaturas)* sizeof(double));
 	mean_K = (double*) malloc((temperaturas)* sizeof(double));
@@ -66,8 +66,9 @@ int main()
 	{
 		step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
 	}
+	printf("Termalizado (inicial)");
 	//---------------------
-	double T = 0.0;
+	double T = 0.0, K;
 	for(i = 0; i < 3 * N; i++)
 	{
 		T += *(v + i) * *(v + i) / 3.0;
@@ -76,51 +77,71 @@ int main()
 
 	for (t = 0; t < temperaturas; t++)
 	{
-		va = (float)t * 100.0 / (float)(temperaturas));
+		va = (float)t * 100.0 / (float) temperaturas;
 		printf("Progreso %.2f", va);
-		printf("%%\r");
+		printf("%%\n");
 
 		for (n = 0; n < termalizacion; n++)
 		{
 			step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
 		}
-		for (n = 0; n < pasos; n++)
+		if(t % 200 == 0)
 		{
-			*(cinetica + n) = 0.0;
-			*(potencial + n) = 0.0;
-			for(c = 0; c < correlacion; c++)
+			for (n = 0; n < pasos; n++)
 			{
-				pot = step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
+				*(cinetica + n) = 0.0;
+				*(potencial + n) = 0.0;
+				for(c = 0; c < correlacion; c++)
+				{
+					pot = step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
+				}
+				*(potencial + n) = pot / (double)N;
+				for(i = 0; i < 3 * N; i++)
+				{
+					*(cinetica + n) += *(v + i) * *(v + i) / 2.0;
+				}
+				*(cinetica + n) = *(cinetica + n) / (double)N;
+				*(energia + n) = *(cinetica + n) + *(potencial + n);
 			}
-			*(potencial + n) = pot / (double)N;
+			*(mean_V + t) = mean(potencial, 0, pasos, 1);
+			*(std2_V + t) = std2(potencial, 0, pasos, 1);
+			*(mean_K + t) = mean(cinetica, 0, pasos, 1);
+			*(std2_K + t) = std2(cinetica, 0, pasos, 1);
+			*(mean_E + t) = mean(energia, 0, pasos, 1);
+			*(std2_E + t) = std2(energia, 0, pasos, 1);
+			*(Cv + t) = C_v(cinetica, pasos, N);
+
+			dT = (Tf - *(mean_K + t) * 2.0 / 3.0) / (double)(temperaturas - t);
+			T += dT;
+			double factor_T = (double)sqrt(T / (*(mean_K + t) * 2.0 / 3.0));
+			for (i = 0; i < 3 * N; i++)
+			{
+				*(v + i) = *(v + i) * factor_T;
+			}
+		}
+		else
+		{
+			K = 0.0;
 			for(i = 0; i < 3 * N; i++)
 			{
-				*(cinetica + n) += *(v + i) * *(v + i) / 2.0;
+				K += *(v + i) * *(v + i) / 3.0;
 			}
-			*(cinetica + n) = *(cinetica + n) / (double)N;
-			*(energia + n) = *(cinetica + n) + *(potencial + n);
-		}
-		*(mean_V + t) = mean(potencial, 0, pasos, 1);
-		*(std2_V + t) = std2(potencial, 0, pasos, 1);
-		*(mean_K + t) = mean(cinetica, 0, pasos, 1);
-		*(std2_K + t) = std2(cinetica, 0, pasos, 1);
-		*(mean_E + t) = mean(energia, 0, pasos, 1);
-		*(std2_E + t) = std2(energia, 0, pasos, 1);
-		*(Cv + t) = C_v(cinetica, pasos, N);
+			
+			dT = (Tf - *(mean_K + t) * 2.0 / 3.0) / (double)(temperaturas - t);
+			T += dT;
+			double factor_T = (double)sqrt(T / (*(mean_K + t) * 2.0 / 3.0));
+			for (i = 0; i < 3 * N; i++)
+			{
+				*(v + i) = *(v + i) * factor_T;
+			}
 
-		dT = (Tf - *(mean_K + t) * 2.0 / 3.0) / (double)(temperaturas - t);
-		T += dT;
-		double factor_T = (double)sqrt(T / (*(mean_K + t) * 2.0 / 3.0));
-		for (i = 0; i < 3 * N; i++)
-		{
-			*(v + i) = *(v + i) * factor_T;
 		}
 	}
 ///------------------------------------------
 
 	FILE * fp;
 	char filename[500];
-	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos_1_b_posta3.txt");
+	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos_1_b_posta3000.txt");
 	fp = fopen(filename, "w");
 	for (t = T0; t < temperaturas; t++)
 	{
