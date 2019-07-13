@@ -1,11 +1,11 @@
 #include "general.h"
 #include "inicializar.h"
 //	distribuyo la posicón de las partículas en una caja 3D, elegí (x0, y0, z0) = (0.5, 0.5, 0.5) solo para evitar el origen xq Lennard Jones diverge allí.
-double set_pos(double *x, int N, float L)
+double set_pos(double *x, int N, double L)
 {
 	int n = cbrt(N);
 	int i = 0, x1, x2, x3;
-	double dl = (double)L / n;
+	double dl = L /(double) n;
 	for(x1 = 0; x1 < n; x1++)
 	{
 		for(x2 = 0; x2 < n; x2++)

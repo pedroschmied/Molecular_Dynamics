@@ -39,3 +39,69 @@ int delta_x(double *x, int i, int j, double *delta_r)
 	}
 	return 0;
 }
+
+double mean (double *v, int o, int n, int k)
+{
+	int i;
+	double x = 0.0;
+	for (i = o; i < (n + o);  i = i + k)
+	{
+		x = x + *(v + i);
+	}
+	x = x * (double)k / (double) n;
+	return x;
+}
+
+double mean2 (double *v, int o, int n, int k)
+{
+	int i;
+	double x = 0.0;
+	for (i = o; i < (n + o);  i = i + k)
+	{
+		x = x + *(v + i) * *(v + i);
+	}
+	x = x * (double)k / (double) n;
+	return x;
+}
+
+double std2 (double *v, int o, int n, int k)
+{
+	double x, prom, prom2;
+	prom = mean(v, o, n, k);
+	prom2 = mean2(v, o, n, k);
+	x = prom2 - prom * prom;
+	return x;
+}
+/*
+long double mean (double *v, int o, int n, int k)
+{
+	int i;
+	long double x = 0.0;
+	for (i = o; i < (n + o);  i = i + k)
+	{
+		x = x + (long double)*(v + i);
+	}
+	x = x * (long double)k / (long double) n;
+	return x;
+}
+
+long double mean2 (double *v, int o, int n, int k)
+{
+	int i;
+	long double x = 0.0;
+	for (i = o; i < (n + o);  i = i + k)
+	{
+		x = x + (long double)(*(v + i) * *(v + i));
+	}
+	x = x * (long double)k / (long double) n;
+	return x;
+}
+
+long double std2 (double *v, int o, int n, int k)
+{
+	long double x, prom, prom2;
+	prom = mean(v, o, n, k);
+	prom2 = mean2(v, o, n, k);
+	x = prom2 - prom * prom;
+	return x;
+}*/

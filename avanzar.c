@@ -1,7 +1,7 @@
 #include "interaccion.h"
 #include "general.h"
 #include "avanzar.h"
-int apply_PBC(double *x, int N, float L)
+int apply_PBC(double *x, int N, double L)
 {
 	int i;
 	for(i = 0; i < 3 * N; i ++)
@@ -43,23 +43,23 @@ int velocity_verlet(double *v, int N, double h, double *F, double *F2)
 	}
 	return 0;
 }
-int fuerza_PCB(double *delta_r, float L)
+int fuerza_PCB(double *delta_r, double L)
 {
 	int k;
 	for (k = 0; k < 3; k++)
 	{
-		if(*(delta_r + k) > (double)L / 2.0)
+		if(*(delta_r + k) > L / 2.0)
 		{
-			*(delta_r + k) -= (double)L;
+			*(delta_r + k) -= L;
 		}
-		else if(*(delta_r + k) <= - (double)L / 2.0)
+		else if(*(delta_r + k) <= - L / 2.0)
 		{
-			*(delta_r + k) += (double)L;
+			*(delta_r + k) += L;
 		}
 	}
 	return 0;
 }
-double fuerzas(double *tabla_F, double *tabla_V, double *F,double *F2, double *x, double rc2, double dr2, int N, float L)
+double fuerzas(double *tabla_F, double *tabla_V, double *F,double *F2, double *x, double rc2, double dr2, int N, double L)
 {
 	double  *F_mod;
 	F_mod = (double*) malloc(1 * sizeof(double));
@@ -96,4 +96,46 @@ double fuerzas(double *tabla_F, double *tabla_V, double *F,double *F2, double *x
 	free(F_mod);
 	free(delta_r);
 	return potencial;
+}
+
+double step_verlet(double *x, double *v, double *F, double *F2, double *tabla_F, double *tabla_V, double rc2, double dr2, double h, double L, int N)
+{
+	double pot;
+	position_verlet(x, v, N, h, F);
+	apply_PBC(x, N, L);
+	pot = fuerzas(tabla_F, tabla_V, F, F2, x, rc2, dr2, N, L);
+	velocity_verlet(v, N, h, F, F2);
+	return pot;
+}
+
+double presion(double *tabla_F, double *tabla_V, double *x, double rc2, double dr2, int N, double L, double T, double rho)
+{
+	double  *f_mod;
+	f_mod = (double*) malloc(1 * sizeof(double));
+	double *delta_R;
+	delta_R = (double*) malloc(3 * sizeof(double));
+	double rij2, r, P = 0.0;
+	int i, j, k;
+	for (i = 0; i < N - 1; i++)
+	{
+		for (j = i + 1; j < N; j++)
+		{
+			delta_x(x, i, j, delta_R);
+			fuerza_PCB(delta_R, L);
+			rij2 = norma2(delta_R);
+			if(rij2 < rc2)
+			{
+				pair_force(tabla_F, tabla_V, rij2, dr2, f_mod);
+				r = sqrt(rij2);
+				for (k = 0; k < 3; k++)
+				{
+					P += *f_mod * *(delta_R + k) * r; //hago P = (Fijx + Fijy + Fijz) * rij
+				}
+			}
+		}
+	}
+	P = P * 1.0 / (L * L * L) + rho * T;
+	free(f_mod);
+	free(delta_R);
+	return P;
 }

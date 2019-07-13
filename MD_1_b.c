@@ -33,33 +33,17 @@ int main()
 	F = (double*) malloc(3 * N * sizeof(double));
 	double  *F2;
 	F2 = (double*) malloc(3 * N * sizeof(double));
-/*/----
-	double a1 = 0.12345678901234567890123456789;
-	long double a2 = 0.12345678901234567890123456789;
-	float a3 = 0.12345678901234567890123456789;
-	printf("\ndouble = %Lf\n", a1);
-	printf("long double = %Lf\n", a2);
-	printf("\nfloat = %f\n", a3);
-//----*/
+
 	int i, t, c, n;
-	int pasos = 250, termalizacion = 2000, correlacion = 500;
+	int pasos = 100, termalizacion = 2000, correlacion = 500;
 	double h = 0.001, pot;
 	double  *potencial, *cinetica, *energia;
 	potencial = (double*) malloc((pasos)* sizeof(double));
 	cinetica = (double*) malloc((pasos) * sizeof(double));
 	energia = (double*) malloc((pasos)* sizeof(double));
 	double *mean_V, *mean_K, *mean_E, *std2_V, *std2_K, *std2_E, *Cv;
-/*	mean_V = (long double*) malloc((pasos)* sizeof(long double));
-	mean_K = (long double*) malloc((pasos)* sizeof(long double));
-	mean_E = (long double*) malloc((pasos)* sizeof(long double));
-	std2_V = (long double*) malloc((pasos)* sizeof(long double));
-	std2_K = (long double*) malloc((pasos)* sizeof(long double));
-	std2_E = (long double*) malloc((pasos)* sizeof(long double));
-	Cv = (long double*) malloc((pasos)* sizeof(long double));
-*/
-
-//	float va;
-	double T0 = 0.1, dT = 0.05, Tf = 0.5;
+	float va;
+	double T0 = 1.0, dT = 0.05, Tf = 2.0;
 	float T_gauss =  T0;
 	int temperaturas = (int)((Tf - T0) / dT) + 1;
 
@@ -80,10 +64,10 @@ int main()
 	//---------------------
 		for (n = 0; n < termalizacion; n++)
 		{
-/*			va = (float)(n) * 100.0 / (float)(pasos * correlacion + termalizacion);
+			va = (float)(n) * 100.0 / (float)(pasos * correlacion + termalizacion);
 			printf("Progreso %.2f", va);
 			printf("%%\r");
-*/			step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
+			step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
 		}
 		for (n = 0; n < pasos; n++)
 		{
@@ -91,10 +75,10 @@ int main()
 			*(potencial + n) = 0.0;
 			for(c = 0; c < correlacion; c++)
 			{
-/*				va = (float)(n * correlacion + c + termalizacion) * 100.0 / (float)(pasos * correlacion + termalizacion);
+				va = (float)(n * correlacion + c + termalizacion) * 100.0 / (float)(pasos * correlacion + termalizacion);
 				printf("Progreso %.2f", va);
 				printf("%%\r");
-*/				pot = step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
+				pot = step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
 			}
 			*(potencial + n) = pot / (double)N;
 			for(i = 0; i < 3 * N; i++)
@@ -104,20 +88,6 @@ int main()
 			*(cinetica + n) = *(cinetica + n) / (double)N;
 			*(energia + n) = *(cinetica + n) + *(potencial + n);
 		}
-/*
-		FILE * fp2;
-		char filename2[500];
-		sprintf (filename2,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/datos_prueba.txt");
-		fp2 = fopen(filename2, "w");
-		for (n = 0; n < pasos; n++)
-		{
-			fprintf(fp2, "%d\t", n);
-			fprintf(fp2, "%lf\t", *(potencial + n));
-			fprintf(fp2, "%lf\t", *(cinetica + n));
-			fprintf(fp2, "%lf\n", *(cinetica + n) * 2.0 / 3.0);
-		}
-		fclose(fp2);
-*/
 		*(mean_V + t) = mean(potencial, 0, pasos, 1);
 		*(std2_V + t) = std2(potencial, 0, pasos, 1);
 		*(mean_K + t) = mean(cinetica, 0, pasos, 1);
@@ -125,16 +95,16 @@ int main()
 		*(mean_E + t) = mean(energia, 0, pasos, 1);
 		*(std2_E + t) = std2(energia, 0, pasos, 1);
 		*(Cv + t) = C_v(cinetica, pasos, N);
-//		printf("\n%d/%d", t, temperaturas - 1);
-		printf("T_gauss = %f\t", T_gauss);
-		printf("T real = %lf\n", *(mean_K + t) * 2.0 / 3.0);
+		printf("\n%d/%d\n", t, temperaturas - 1);
+//		printf("T_gauss = %f\t", T_gauss);
+//		printf("T real = %lf\n", *(mean_K + t) * 2.0 / 3.0);
 		T_gauss += dT;
 	}
 ///------------------------------------------
 
 	FILE * fp;
 	char filename[500];
-	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos_1_1000b.txt");
+	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos_1_b.txt");
 	fp = fopen(filename, "w");
 	for (t = T0; t < temperaturas; t++)
 	{
@@ -147,3 +117,29 @@ int main()
 		fprintf(fp, "%.15lf\t", (double)sqrt(*(std2_E + t)));
 		fprintf(fp, "%.15lf\n", *(Cv + t));
 	}
+	fclose(fp);
+	free(mean_V);
+	free(mean_K);
+	free(mean_E);
+	free(std2_V);
+	free(std2_K);
+	free(std2_E);
+	free(Cv);
+	free(cinetica);
+	free(potencial);
+	free(energia);
+	free(F);
+	free(F2);
+	free(tabla_F);
+	free(tabla_V);	
+	free(x);
+	free(v);
+	return 0;
+}
+#include "general.c"
+#include "inicializar.c"
+#include "visualizacion.c"
+#include "interaccion.c"
+#include "avanzar.c"
+#include "termalizacion.c"
+#include "magnitudes.c"
