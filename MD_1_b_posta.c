@@ -35,7 +35,7 @@ int main()
 	F2 = (double*) malloc(3 * N * sizeof(double));
 
 	int i, t, c, n;
-	int pasos = 100, termalizacion = 100, correlacion = 500;
+	int pasos = 10, termalizacion = 100, correlacion = 5;
 	double h = 0.001, pot;
 	double  *potencial, *cinetica, *energia;
 	potencial = (double*) malloc((pasos)* sizeof(double));
@@ -45,7 +45,7 @@ int main()
 	float va;
 	float T_gauss =  1.0;
 	double T0 = (double)T_gauss, Tf = 0.5, dT;
-	int temperaturas = 1000;
+	int temperaturas = 10;
 
 	mean_V = (double*) malloc((temperaturas)* sizeof(double));
 	mean_K = (double*) malloc((temperaturas)* sizeof(double));
@@ -62,7 +62,7 @@ int main()
 	set_vel(v, N, T_gauss);
 	fuerzas(tabla_F, tabla_V, F, F2, x, rc2, dr2, N, L);
 	//-------termalización inicial
-	for (n = 0; n < 2000; n++)
+	for (n = 0; n < 2; n++)
 	{
 		step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
 	}
@@ -76,11 +76,12 @@ int main()
 
 	for (t = 0; t < temperaturas; t++)
 	{
+		va = (float)t * 100.0 / (float)(temperaturas));
+		printf("Progreso %.2f", va);
+		printf("%%\r");
+
 		for (n = 0; n < termalizacion; n++)
 		{
-			va = (float)(n + t * (termalizacion + pasos)) * 100.0 / (float)(pasos * correlacion + termalizacion + temperaturas * (termalizacion + pasos));
-			printf("Progreso %.2f", va);
-			printf("%%\r");
 			step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
 		}
 		for (n = 0; n < pasos; n++)
@@ -89,9 +90,6 @@ int main()
 			*(potencial + n) = 0.0;
 			for(c = 0; c < correlacion; c++)
 			{
-				va = (float)(n * correlacion + c + termalizacion + t * (termalizacion + pasos)) * 100.0 / (float)(pasos * correlacion + termalizacion + temperaturas * (termalizacion + pasos));
-				printf("Progreso %.2f", va);
-				printf("%%\r");
 				pot = step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
 			}
 			*(potencial + n) = pot / (double)N;
@@ -122,7 +120,7 @@ int main()
 
 	FILE * fp;
 	char filename[500];
-	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos_1_b_posta2.txt");
+	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/MD_datos_1_b_posta3.txt");
 	fp = fopen(filename, "w");
 	for (t = T0; t < temperaturas; t++)
 	{
