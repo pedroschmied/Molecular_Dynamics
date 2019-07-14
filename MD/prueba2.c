@@ -14,8 +14,8 @@
 
 int main()
 {
-	int N = 512;
-	double rho = 0.8442, L = cbrt(N / rho);
+	int N = 125;
+	double rho = 0.4, L = cbrt(N / rho);
 
 	double *x, *v;
 	x = (double*) malloc(3 * N * sizeof(double));
@@ -34,7 +34,7 @@ int main()
 	double  *F2;
 	F2 = (double*) malloc(3 * N * sizeof(double));
 //______set inicial______
-	float T_gauss =  2.0;
+	float T_gauss =  3.5;
 	set_pos(x, N, L);
 	double cinetica0 = set_vel(v, N, T_gauss);
 	double temp0;
@@ -45,9 +45,9 @@ int main()
 	int loops_T = 20000;
 	int termalizacion_inicial = 2000;
 	int termalizacion = 100;
-	int correlacion = 250;
+	int correlacion = 500;
 	int T_medidas = 200;
-	double Tf = 0.1;
+	double Tf = 0.4;
 	double h = 0.001;
 //_______________________
 	double T0 = temp0, T = T0, dT, pot, factor_T, P;
@@ -84,7 +84,6 @@ int main()
 		printf("Progreso %.2f", va);
 		printf("%%\n");
 //__termalizo___
-		T0 = 0.0;
 		for(n = 0; n < termalizacion / 2; n++)
 		{
  			step_verlet(x, v, F, F2, tabla_F, tabla_V, rc2, dr2, h, L, N);
@@ -131,7 +130,6 @@ int main()
 
 			T0 = *(mean_K + l) * 2.0 / 3.0;
 			l += 1;
-
 		}
 		else
 		{
@@ -152,15 +150,15 @@ int main()
 
 	FILE * fp;
 	char filename[500];
-	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/new/prueba.txt");
+	sprintf (filename,"prueba2_p_%lf.txt", rho);
 	fp = fopen(filename, "w");
 	l = 0;
 	for (t = 0; t < loops_T; t++)
 	{
 		if (t % T_medidas == 0)
 		{
-	//		fprintf(fp, "%.15lf\t", *(mean_K + t) * 2.0 / 3.0);
-			fprintf(fp, "%d\t", t);
+			fprintf(fp, "%.15lf\t", *(mean_K + t) * 2.0 / 3.0);
+//			fprintf(fp, "%d\t", t);
 			fprintf(fp, "%.15lf\t", *(mean_V + l));
 			fprintf(fp, "%.15lf\t", *(mean_K + l));
 			fprintf(fp, "%.15lf\t", *(mean_E + l));
