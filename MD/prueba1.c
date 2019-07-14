@@ -41,7 +41,7 @@ int main()
 	fuerzas(tabla_F, tabla_V, F, F2, x, rc2, dr2, N, L);
 	temp0 = cinetica0 * 2.0 / (3.0 * (double)N);
 //______datos variables__
-	int pasos = 100;
+/*	int pasos = 100;
 	int loops_T = 15000;
 	int termalizacion_inicial = 2000;
 	int termalizacion = 100;
@@ -49,6 +49,16 @@ int main()
 	int T_medidas = 200;
 	double Tf = 0.5;
 	double h = 0.001;
+*/
+	int pasos = 100;
+	int loops_T = 100;
+	int termalizacion_inicial = 2;
+	int termalizacion = 50;
+	int correlacion = 2;
+	int T_medidas = 2;
+	double Tf = 0.5;
+	double h = 0.001;
+//
 //_______________________
 	double T0 = temp0, T = T0, dT, pot, factor_T;
 	float va;
@@ -77,9 +87,11 @@ int main()
 	}
 	printf("\nTermalizado (inicial)\n");
 //_______________________
+	loops_T = 20;
+
 	for (t = 0; t < loops_T; t++)
 	{
-		va = (float) t * 100.0 / (float)loops_T;
+		va = (float) t * 50.0 / (float)loops_T;
 		printf("Progreso %.2f", va);
 		printf("%%\n");
 
@@ -108,12 +120,14 @@ int main()
 		}
 	}
 //_______________________
-	loops_T = 20000;
-	Tf = 0.01;
+//	loops_T = 20000;
+//	Tf = 0.1;
+	loops_T = 100;
+	Tf = 0.1;
 
 	for (t = 0; t < loops_T; t++)
 	{
-		va = (float) t * 100.0 / (float)loops_T;
+		va = (float) t * 50.0 / (float)loops_T + 50.0;
 		printf("Progreso %.2f", va);
 		printf("%%\n");
 //__termalizo___
@@ -131,7 +145,6 @@ int main()
 				*(cinetica2 + n) += *(v + i) * *(v + i) / (2.0 * (double)N);
 			}
 		}
-//		T0 = T0 / (3.0 * (double)N * termalizacion / 2.0);
 //______________
 		if (t % T_medidas == 0)
 		{
@@ -175,21 +188,17 @@ int main()
 		{
 			*(v + i) = *(v + i) * factor_T;
 		}
-
 	}
-
 ///------------------------------------------
-
 	FILE * fp;
 	char filename[500];
-	sprintf (filename,"/home/pedro/Desktop/Universidad/Fisica_computacional/Datos_molecular_dynamics/MD/new/prueba.txt");
+	sprintf (filename,"prueba1.txt");
 	fp = fopen(filename, "w");
 	l = 0;
 	for (t = 0; t < loops_T; t++)
 	{
 		if (t % T_medidas == 0)
 		{
-	//		fprintf(fp, "%.15lf\t", *(mean_K + t) * 2.0 / 3.0);
 			fprintf(fp, "%d\t", t);
 			fprintf(fp, "%.15lf\t", *(mean_V + l));
 			fprintf(fp, "%.15lf\t", *(mean_K + l));
